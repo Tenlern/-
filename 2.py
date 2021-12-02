@@ -40,28 +40,33 @@ def setup():
 
 
 def main():
-    # Массив под результат
     res = []
     # Проверяем адрес на наличие чего-либо
     with os.scandir(labels_dir) as directory:
         entry: os.DirEntry
+        # Проверяем каждую папку
         for entry in directory:
             if entry.is_dir():
                 path = f"%s/%s/" % (labels_dir, entry.name)
 
                 files = os.listdir(entry.path)
+                # Соритруем массив, так картинка и мета-данные окажутся рядом
                 files.sort()
                 found = []
                 skip = False
+                # Проверяем каждый файл
                 for i in range(len(files) - 1):
+                    # Если мы наткнулись на json при проверке прошлого файла, то пропускаем цикл
                     if skip:
                         skip = False
                         continue
                     file: str = files[i]
                     mask = file[:file.find(".")]
+                    # Если мы попали на картинку, то мета-данные должны быть после них
                     if files[i + 1].lower() == mask + ".json":
                         skip = True
                         found.append([path + file, path + files[i + 1]])
+                    # Для png наоборот, мета-данные должны были идти перед ним
                     elif files[i - 1].lower() == mask + ".json":
                         # skip = True
                         found.append([path + file, path + files[i - 1]])
@@ -73,36 +78,5 @@ def main():
     pprint(res)
 
 
-def main2():
-    # Массив под результат
-    res = []
-    # Проверяем адрес на наличие чего-либо
-    with os.scandir(labels_dir) as directory:
-        entry: os.DirEntry
-        for entry in directory:
-            if entry.is_dir():
-                path = f"%s/%s/" % (labels_dir, entry.name)
-
-                files = os.listdir(entry.path)
-                files.sort()
-                found = []
-                i = 0
-                file = files.pop(0)
-                while len(files) > 0:
-                    file = files.pop()
-                    for j in range(len(files)):
-                        mask = file[:file.find(".")]
-                        if files[j].lower() == mask + ".json":
-                            found.append([path + file, path + files[i + 1]])
-
-                    i += 1
-
-                if len(found) > 0:
-                    label = {}
-                    label.setdefault(entry.name, found)
-                    res.append(label)
-    pprint(res)
-
-
 if __name__ == '__main__':
-    main2()
+    main()
